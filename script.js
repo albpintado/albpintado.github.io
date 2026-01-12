@@ -370,6 +370,94 @@ function activateEasterEgg() {
 }
 
 // ===================================
+// Blog Posts Loader
+// ===================================
+async function loadBlogPosts() {
+    const container = document.getElementById('blog-posts-container');
+
+    if (!container) return;
+
+    try {
+        const response = await fetch('blog/posts.json');
+
+        if (!response.ok) {
+            throw new Error('Failed to load blog posts');
+        }
+
+        const posts = await response.json();
+
+        // Clear loading message
+        container.innerHTML = '';
+
+        // If no posts, show a message
+        if (posts.length === 0) {
+            container.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary);">No blog posts yet. Check back soon!</p>';
+            return;
+        }
+
+        // Sort posts by date (newest first)
+        posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // Render each post
+        posts.forEach(post => {
+            const article = document.createElement('article');
+            article.className = 'blog-card';
+
+            // Format date
+            const date = new Date(post.date);
+            const formattedDate = date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long'
+            });
+
+            // Get the first tag or default
+            const primaryTag = post.tags && post.tags.length > 0 ? post.tags[0] : 'Article';
+
+            article.innerHTML = `
+                <div class="blog-meta">
+                    <span class="blog-date">${formattedDate}</span>
+                    <span class="blog-tag">${primaryTag}</span>
+                </div>
+                <h3 class="blog-title">${post.title}</h3>
+                <p class="blog-excerpt">${post.excerpt}</p>
+                <a href="blog/posts/${post.slug}.html" class="blog-link">Read more →</a>
+            `;
+
+            container.appendChild(article);
+        });
+
+        // Apply fade-in animation to newly created cards
+        const newCards = container.querySelectorAll('.blog-card');
+        newCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+
+    } catch (error) {
+        console.error('Error loading blog posts:', error);
+        container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary);">
+                <p>Unable to load blog posts at the moment.</p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Please try again later.</p>
+            </div>
+        `;
+    }
+}
+
+// Load blog posts when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadBlogPosts);
+} else {
+    loadBlogPosts();
+}
+
+// ===================================
 // Initialize
 // ===================================
 console.log('%c✅ Portfolio initialized successfully!', 'font-size: 12px; color: #3fb950;');
