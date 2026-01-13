@@ -1,0 +1,11 @@
+[
+  {
+    "id": "understanding-async-await-javascript",
+    "title": "Understanding Async/Await in Modern JavaScript",
+    "date": "2025-12-15",
+    "excerpt": "A deep dive into asynchronous programming patterns and how to write cleaner, more maintainable async code in JavaScript.",
+    "tags": ["JavaScript", "Async", "Programming"],
+    "slug": "understanding-async-await-javascript",
+    "readTime": "8 min read"
+  }
+]

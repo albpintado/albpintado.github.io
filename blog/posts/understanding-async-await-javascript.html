@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A deep dive into asynchronous programming patterns and how to write cleaner, more maintainable async code in JavaScript.">
+    <meta name="author" content="Alberto Pintado">
+    <title>Understanding Async/Await in Modern JavaScript | Alberto Pintado</title>
+
+    <!-- Nerd Font - JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        /* Additional styles specific to blog posts */
+        .blog-post {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+
+        .post-header {
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 2px solid var(--bg-tertiary);
+        }
+
+        .post-meta {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+        }
+
+        .post-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .post-meta-item::before {
+            content: '>';
+            color: var(--terminal-green);
+        }
+
+        .post-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+            line-height: 1.2;
+        }
+
+        .post-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: var(--spacing-sm);
+        }
+
+        .post-tag {
+            background-color: var(--bg-tertiary);
+            color: var(--accent-primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            border: 1px solid var(--accent-primary);
+        }
+
+        .post-content {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .post-content h2 {
+            margin-top: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            color: var(--accent-primary);
+            font-size: 1.8rem;
+        }
+
+        .post-content h3 {
+            margin-top: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+            color: var(--accent-secondary);
+            font-size: 1.4rem;
+        }
+
+        .post-content p {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .post-content code {
+            background-color: var(--bg-tertiary);
+            padding: 0.2rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+            color: var(--syntax-string);
+        }
+
+        .post-content pre {
+            background-color: var(--bg-terminal);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            margin: var(--spacing-md) 0;
+            border: 1px solid var(--bg-tertiary);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .post-content ul, .post-content ol {
+            margin: var(--spacing-md) 0;
+            padding-left: var(--spacing-md);
+        }
+
+        .post-content li {
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-secondary);
+        }
+
+        .post-content blockquote {
+            border-left: 4px solid var(--accent-primary);
+            padding-left: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .post-content a {
+            color: var(--accent-primary);
+            text-decoration: underline;
+        }
+
+        .post-content a:hover {
+            color: var(--accent-secondary);
+        }
+
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: var(--spacing-md);
+            color: var(--accent-primary);
+            transition: all var(--transition-fast);
+        }
+
+        .back-to-blog:hover {
+            gap: 0.8rem;
+            color: var(--accent-secondary);
+        }
+
+        .post-navigation {
+            margin-top: var(--spacing-xl);
+            padding-top: var(--spacing-md);
+            border-top: 2px solid var(--bg-tertiary);
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Syntax highlighting */
+        .keyword { color: var(--syntax-keyword); }
+        .string { color: var(--syntax-string); }
+        .comment { color: var(--syntax-comment); }
+        .function { color: var(--accent-green); }
+        .property { color: var(--syntax-property); }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <span class="terminal-prompt">$</span> alberto.dev
+            </div>
+            <ul class="nav-menu">
+                <li><a href="../../index.html#about" class="nav-link">about</a></li>
+                <li><a href="../../index.html#experience" class="nav-link">experience</a></li>
+                <li><a href="../../index.html#projects" class="nav-link">projects</a></li>
+                <li><a href="../../index.html#blog" class="nav-link">blog</a></li>
+                <li><a href="../../index.html#contact" class="nav-link">contact</a></li>
+            </ul>
+            <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Blog Post Content -->
+    <article class="blog-post">
+        <a href="../../index.html#blog" class="back-to-blog">← Back to Blog</a>
+
+        <header class="post-header">
+            <h1 class="post-title">Understanding Async/Await in Modern JavaScript</h1>
+            <div class="post-meta">
+                <span class="post-meta-item">December 15, 2025</span>
+                <span class="post-meta-item">8 min read</span>
+            </div>
+            <div class="post-tags">
+                <span class="post-tag">#JavaScript</span>
+                <span class="post-tag">#Async</span>
+                <span class="post-tag">#Programming</span>
+            </div>
+        </header>
+
+        <div class="post-content">
+            <p>Asynchronous programming is at the heart of modern JavaScript development. Whether you're fetching data from APIs, reading files, or handling user interactions, understanding how to work with async operations is crucial. In this post, we'll dive deep into async/await and how it revolutionized JavaScript async code.</p>
+
+            <h2>The Evolution of Async JavaScript</h2>
+
+            <p>JavaScript has come a long way in handling asynchronous operations. Let's look at the evolution:</p>
+
+            <h3>1. Callbacks (The Old Way)</h3>
+
+            <p>In the early days, we relied heavily on callbacks:</p>
+
+            <pre><code><span class="keyword">function</span> <span class="function">fetchUser</span>(id, callback) {
+  <span class="function">setTimeout</span>(() => {
+    <span class="keyword">const</span> user = { <span class="property">id</span>: id, <span class="property">name</span>: <span class="string">'John Doe'</span> };
+    <span class="function">callback</span>(user);
+  }, <span class="string">1000</span>);
+}
+
+<span class="function">fetchUser</span>(<span class="string">1</span>, (user) => {
+  <span class="function">console</span>.<span class="function">log</span>(user);
+  <span class="comment">// Callback hell begins here...</span>
+});</code></pre>
+
+            <p>The problem? Callback hell. Nested callbacks made code difficult to read and maintain.</p>
+
+            <h3>2. Promises (A Better Approach)</h3>
+
+            <p>Promises improved the situation significantly:</p>
+
+            <pre><code><span class="keyword">function</span> <span class="function">fetchUser</span>(id) {
+  <span class="keyword">return new</span> <span class="function">Promise</span>((resolve, reject) => {
+    <span class="function">setTimeout</span>(() => {
+      <span class="keyword">const</span> user = { <span class="property">id</span>: id, <span class="property">name</span>: <span class="string">'John Doe'</span> };
+      <span class="function">resolve</span>(user);
+    }, <span class="string">1000</span>);
+  });
+}
+
+<span class="function">fetchUser</span>(<span class="string">1</span>)
+  .<span class="function">then</span>(user => <span class="function">console</span>.<span class="function">log</span>(user))
+  .<span class="function">catch</span>(error => <span class="function">console</span>.<span class="function">error</span>(error));</code></pre>
+
+            <p>Promises allowed chaining and better error handling, but we could do even better.</p>
+
+            <h3>3. Async/Await (The Modern Way)</h3>
+
+            <p>Enter async/await - syntactic sugar that makes async code look synchronous:</p>
+
+            <pre><code><span class="keyword">async function</span> <span class="function">getUser</span>() {
+  <span class="keyword">try</span> {
+    <span class="keyword">const</span> user = <span class="keyword">await</span> <span class="function">fetchUser</span>(<span class="string">1</span>);
+    <span class="function">console</span>.<span class="function">log</span>(user);
+  } <span class="keyword">catch</span> (error) {
+    <span class="function">console</span>.<span class="function">error</span>(error);
+  }
+}
+
+<span class="function">getUser</span>();</code></pre>
+
+            <h2>How Async/Await Works</h2>
+
+            <p>Let's break down the key concepts:</p>
+
+            <h3>The async Keyword</h3>
+
+            <p>The <code>async</code> keyword before a function makes it return a Promise automatically. Even if you return a regular value, it gets wrapped in a resolved Promise.</p>
+
+            <pre><code><span class="keyword">async function</span> <span class="function">hello</span>() {
+  <span class="keyword">return</span> <span class="string">'Hello, World!'</span>;
+}
+
+<span class="comment">// Equivalent to:</span>
+<span class="keyword">function</span> <span class="function">hello</span>() {
+  <span class="keyword">return</span> <span class="function">Promise.resolve</span>(<span class="string">'Hello, World!'</span>);
+}</code></pre>
+
+            <h3>The await Keyword</h3>
+
+            <p>The <code>await</code> keyword can only be used inside async functions. It pauses the function execution until the Promise resolves or rejects.</p>
+
+            <blockquote>
+                <strong>Important:</strong> The await keyword doesn't block the entire JavaScript thread - it only pauses the execution of the async function itself. Other code continues to run.
+            </blockquote>
+
+            <h2>Real-World Example: Fetching Data</h2>
+
+            <p>Here's a practical example of fetching data from an API:</p>
+
+            <pre><code><span class="keyword">async function</span> <span class="function">fetchUserData</span>(userId) {
+  <span class="keyword">try</span> {
+    <span class="comment">// Fetch user</span>
+    <span class="keyword">const</span> userResponse = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">`/api/users/${userId}`</span>);
+    <span class="keyword">const</span> user = <span class="keyword">await</span> userResponse.<span class="function">json</span>();
+
+    <span class="comment">// Fetch user's posts</span>
+    <span class="keyword">const</span> postsResponse = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">`/api/users/${userId}/posts`</span>);
+    <span class="keyword">const</span> posts = <span class="keyword">await</span> postsResponse.<span class="function">json</span>();
+
+    <span class="keyword">return</span> { user, posts };
+  } <span class="keyword">catch</span> (error) {
+    <span class="function">console</span>.<span class="function">error</span>(<span class="string">'Error fetching data:'</span>, error);
+    <span class="keyword">throw</span> error;
+  }
+}</code></pre>
+
+            <h2>Common Patterns and Best Practices</h2>
+
+            <h3>1. Parallel Execution with Promise.all</h3>
+
+            <p>When operations don't depend on each other, run them in parallel:</p>
+
+            <pre><code><span class="keyword">async function</span> <span class="function">fetchAllData</span>() {
+  <span class="keyword">const</span> [users, posts, comments] = <span class="keyword">await</span> <span class="function">Promise.all</span>([
+    <span class="function">fetch</span>(<span class="string">'/api/users'</span>).<span class="function">then</span>(r => r.<span class="function">json</span>()),
+    <span class="function">fetch</span>(<span class="string">'/api/posts'</span>).<span class="function">then</span>(r => r.<span class="function">json</span>()),
+    <span class="function">fetch</span>(<span class="string">'/api/comments'</span>).<span class="function">then</span>(r => r.<span class="function">json</span>())
+  ]);
+
+  <span class="keyword">return</span> { users, posts, comments };
+}</code></pre>
+
+            <h3>2. Error Handling</h3>
+
+            <p>Always use try/catch blocks for proper error handling:</p>
+
+            <pre><code><span class="keyword">async function</span> <span class="function">safeAsyncOperation</span>() {
+  <span class="keyword">try</span> {
+    <span class="keyword">const</span> result = <span class="keyword">await</span> <span class="function">riskyOperation</span>();
+    <span class="keyword">return</span> result;
+  } <span class="keyword">catch</span> (error) {
+    <span class="function">console</span>.<span class="function">error</span>(<span class="string">'Operation failed:'</span>, error);
+    <span class="comment">// Handle error gracefully</span>
+    <span class="keyword">return</span> <span class="keyword">null</span>;
+  }
+}</code></pre>
+
+            <h3>3. Avoid Sequential Awaits When Not Needed</h3>
+
+            <p>Bad (sequential):</p>
+
+            <pre><code><span class="comment">// Takes 2 seconds total</span>
+<span class="keyword">const</span> user = <span class="keyword">await</span> <span class="function">fetchUser</span>(); <span class="comment">// 1 second</span>
+<span class="keyword">const</span> posts = <span class="keyword">await</span> <span class="function">fetchPosts</span>(); <span class="comment">// 1 second</span></code></pre>
+
+            <p>Good (parallel):</p>
+
+            <pre><code><span class="comment">// Takes 1 second total</span>
+<span class="keyword">const</span> [user, posts] = <span class="keyword">await</span> <span class="function">Promise.all</span>([
+  <span class="function">fetchUser</span>(),
+  <span class="function">fetchPosts</span>()
+]);</code></pre>
+
+            <h2>Common Pitfalls to Avoid</h2>
+
+            <ul>
+                <li><strong>Forgetting to await:</strong> If you forget await, you'll get a Promise instead of the actual value</li>
+                <li><strong>Using await in loops incorrectly:</strong> Be careful with for loops - consider using Promise.all for parallel execution</li>
+                <li><strong>Not handling errors:</strong> Always wrap await calls in try/catch or handle Promise rejections</li>
+                <li><strong>Mixing promises and async/await:</strong> Pick one pattern and stick with it for consistency</li>
+            </ul>
+
+            <h2>Conclusion</h2>
+
+            <p>Async/await has transformed how we write asynchronous JavaScript. It makes async code more readable, easier to debug, and simpler to maintain. By understanding how it works under the hood and following best practices, you can write cleaner, more efficient async code.</p>
+
+            <p>Remember: async/await is just syntactic sugar over Promises. Understanding Promises is still important for mastering async JavaScript.</p>
+
+            <p>Happy coding!</p>
+        </div>
+
+        <nav class="post-navigation">
+            <a href="../../index.html#blog" class="btn btn-primary">Back to All Posts</a>
+        </nav>
+    </article>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Alberto Pintado. Built with vanilla HTML, CSS & JavaScript.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu functionality
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const navMenu = document.querySelector('.nav-menu');
+
+        if (mobileMenuToggle && navMenu) {
+            mobileMenuToggle.addEventListener('click', () => {
+                mobileMenuToggle.classList.toggle('active');
+                navMenu.classList.toggle('active');
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenuToggle.classList.remove('active');
+                    navMenu.classList.remove('active');
+                });
+            });
+        }
+    </script>
+</body>
+</html>
