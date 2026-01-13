@@ -57,6 +57,44 @@
     --shadow-glow: 0 0 20px rgba(88, 166, 255, 0.3);
 }
 
+/* Light Theme */
+[data-theme="light"] {
+    /* Color Palette - Light Theme */
+    --bg-primary: #f5f5f5;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #e8e8e8;
+    --bg-terminal: #fafafa;
+
+    --text-primary: #1a1a1a;
+    --text-secondary: #4a4a4a;
+    --text-muted: #707070;
+
+    --accent-primary: #0066cc;
+    --accent-secondary: #0052a3;
+    --accent-green: #28a745;
+    --accent-purple: #6f42c1;
+    --accent-orange: #ff9800;
+    --accent-red: #dc3545;
+    --accent-yellow: #ffc107;
+
+    /* Terminal Colors */
+    --terminal-green: #28a745;
+    --terminal-red: #dc3545;
+    --terminal-yellow: #ffc107;
+
+    /* Syntax Highlighting */
+    --syntax-keyword: #d73a49;
+    --syntax-string: #032f62;
+    --syntax-property: #005cc5;
+    --syntax-comment: #6a737d;
+
+    /* Box Shadow */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+    --shadow-glow: 0 0 20px rgba(0, 102, 204, 0.2);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -198,6 +236,37 @@ a:hover {
     height: 2px;
     background-color: var(--text-primary);
     transition: all var(--transition-fast);
+}
+
+.nav-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.theme-toggle, .lang-toggle {
+    background: none;
+    border: 1px solid var(--bg-tertiary);
+    color: var(--text-primary);
+    padding: 0.5rem 0.8rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.theme-toggle:hover, .lang-toggle:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.theme-icon {
+    font-size: 1.1rem;
+    line-height: 1;
 }
 
 /* ===================================
@@ -852,6 +921,19 @@ a:hover {
 
     .mobile-menu-toggle.active span:nth-child(3) {
         transform: rotate(-45deg) translate(7px, -6px);
+    }
+
+    .nav-controls {
+        position: fixed;
+        top: 10px;
+        right: 60px;
+        z-index: 1001;
+        gap: 0.5rem;
+    }
+
+    .theme-toggle, .lang-toggle {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.75rem;
     }
 
     /* Fix hero section overflow on mobile */

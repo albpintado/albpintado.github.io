@@ -29,6 +29,37 @@ if (mobileMenuToggle && navMenu) {
 }
 
 // ===================================
+// Theme Toggle (Dark/Light Mode)
+// ===================================
+const themeToggle = document.getElementById('theme-toggle');
+const themeIcon = document.querySelector('.theme-icon');
+
+// Get saved theme or default to dark
+const savedTheme = localStorage.getItem('theme') || 'dark';
+document.documentElement.setAttribute('data-theme', savedTheme);
+
+// Update icon based on current theme
+function updateThemeIcon(theme) {
+    if (themeIcon) {
+        themeIcon.textContent = theme === 'light' ? '🌙' : '☀️';
+    }
+}
+
+// Set initial icon
+updateThemeIcon(savedTheme);
+
+if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
+    });
+}
+
+// ===================================
 // Smooth Scrolling for Navigation Links
 // ===================================
 const smoothScrollLinks = document.querySelectorAll('a[href^="#"]');
